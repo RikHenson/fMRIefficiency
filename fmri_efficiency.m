@@ -1748,7 +1748,7 @@ end
 % 
 % Let's assume we have 16 voxels, and two trial-types (A and B), which produce 
 % orthogonal patterns over those voxels (but which are randomly intermixed every 
-% 4s):
+% 2s):
 
 num_vox = 16;  % Assume multiple of 2
 % Generate orthogonal base patterns:
@@ -1763,10 +1763,9 @@ c_trl   = 1; % Covariance across voxels of trial variability (1=all voxels vary 
 S_trl   = c_trl * ones(num_vox) + (1-c_trl)*eye(num_vox); % Covariance matrix for mvnrnd
 
 rng(1)
-B = trl_std * mvnrnd(mB, S_trl); % Start by concatenating patterns...
+B = mB + trl_std * mvnrnd(zeros(size(mB)), S_trl); % Start by concatenating patterns...
 
 r = randperm(2*num_trl); % ...then permute their order of randomly
-%r = 1:(2*num_trl);
 mB = mB(r,:);
 B = B(r,:); 
 v = floor((r-1)/num_trl)+1;  % (ordered labels for each stimulus-type)
@@ -1784,7 +1783,8 @@ u = zeros(num_smp, num_vox);
 u(1:(SOA/dt):num_smp, :) = B;
 
 s = lconv(u, HRF);
-s = s(1:(TR/dt):num_smp,:); % downsample each TR
+TR_bins = round(TR/dt);
+s = s(round(TR_bins/2):TR_bins:end,:); % downsample each TR
 num_TRs = size(s,1);
 
 scn_std = 1; % Scaling (std) of noise (co)variability (trl_std/scn_std = SNR)
@@ -2350,17 +2350,17 @@ function [y,B] = gen_y(mB, SOA, trl_std, scn_std, HRF, TR, trl_cov, scn_cov);
 
     B = mB + trl_std*mvnrnd(zeros(num_trl, num_vox), trl_cov); 
 
-    num_TRs = round(num_trl*SOA/TR);
-    TRs  = round(TR/dt);
-    SOAs = round(SOA/dt);
+    num_TRs  = round(num_trl*SOA/TR);
+    TR_bins  = round(TR/dt);
+    SOA_bins = round(SOA/dt);
 
-    u = zeros(num_TRs*TRs, num_vox);
+    u = zeros(num_TRs*TR_bins, num_vox);
 
-    u(1:SOAs:(num_trl*SOAs), :) = B;
+    u(1:SOA_bins:(num_trl*SOA_bins), :) = B;
 
     y = lconv(u,HRF);
 
-    y = y(round(TRs/2):TRs:(num_TRs/dt), :);
+    y = y(round(TR_bins/2):TR_bins:(num_TRs/dt), :);
 
     scn_cov = scn_cov*ones(num_vox) + (1-scn_cov)*eye(num_vox); 
 
