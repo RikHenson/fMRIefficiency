@@ -693,6 +693,7 @@ efficiency = @(c,X) 1/trace(c'*inv(X'*X)*c)
 rng(2) % Just to get nice visualisation
 SOAmin = 4; dt = 1; % Assume TR=dt, ie sampled every 1s
 total_time = SOAmin*32;
+t = [0:dt:(total_time-dt)]'; num_smp = length(t);
 r = randperm(round(total_time/SOAmin));
 r = r(1:round(length(r)/2));
 ran_u = zeros(num_smp,1);       % hypothetical neural activity for randomised design
@@ -718,16 +719,16 @@ X_blk_FIR = detrend(lconv(blk_u,FIR),0);
 
 figure, sgtitle('Fig 1.12. Detection Power vs Estimation Efficiency', 'FontSize', 14)
 subplot(2,2,1)
-imagesc(X_ran_HRF), colormap('gray'); xlim([1 2]); ylim([0 128/dt]);
+imagesc(X_ran_HRF), colormap('gray'); ylim([0 128/dt]);
 title(sprintf('Ran HRF eff=%3.0f',100*efficiency(1, X_ran_HRF)))
 subplot(2,2,2)
-imagesc(X_ran_FIR), colormap('gray'); xlim([1 num_bins]); ylim([0 128/dt]);
+imagesc(X_ran_FIR), colormap('gray'); ylim([0 128/dt]);
 title(sprintf('Ran FIR eff=%3.0f',100*efficiency(eye(num_bins), X_ran_FIR)))
 subplot(2,2,3)
-imagesc(X_blk_HRF), colormap('gray'); xlim([1 2]); ylim([0 128/dt]);
+imagesc(X_blk_HRF), colormap('gray'); ylim([0 128/dt]);
 title(sprintf('Blk HRF eff=%3.0f',100*efficiency(1, X_blk_HRF)))
 subplot(2,2,4)
-imagesc(X_blk_FIR), colormap('gray'); xlim([1 num_bins]); ylim([0 128/dt]);
+imagesc(X_blk_FIR), colormap('gray'); ylim([0 128/dt]);
 title(sprintf('Blk FIR eff=%3.0f',100*efficiency(eye(num_bins), X_blk_FIR)))
 %% 
 % Thus the detection power (efficiency using a single assumed HRF; two left 
